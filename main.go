@@ -12,10 +12,10 @@ func main() {
 	router := mux.NewRouter()
 
 	// Controllers
-	bookController := controllers.BookController{}
+	calcController := controllers.CalcController{}
 
 	// Binds
-	bookController.Bind(router)
+	calcController.Bind(router)
 
 	log.Fatal(http.ListenAndServe(":5000", router))
 }
