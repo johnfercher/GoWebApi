@@ -1,6 +1,7 @@
 package main
 
 import (
+	. "./models"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"log"
@@ -10,18 +11,6 @@ import (
 )
 
 // Book Struct (Model)
-type Author struct {
-	Firstname string `json:"firstname"`
-	Lastname  string `json:"lastname"`
-}
-
-type Book struct {
-	Id     string  `json:"id"`
-	Isbn   string  `json:"isbn"`
-	Title  string  `json:"title"`
-	Author *Author `json:"author"`
-}
-
 var books []Book
 
 func main() {
