@@ -1,5 +1,5 @@
 package models
 
-type Expression struct {
+type ExpressionModel struct {
 	Content string `json:"expression"`
 }

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"./controllers"
+	"./application/controllers"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -12,10 +12,10 @@ func main() {
 	router := mux.NewRouter()
 
 	// Controllers
-	calcController := controllers.CalcController{}
+	calculatorController := controllers.CalculatorController{}
 
 	// Binds
-	calcController.Bind(router)
+	calculatorController.Bind(router)
 
 	log.Fatal(http.ListenAndServe(":5000", router))
 }
