@@ -18,12 +18,15 @@ func (b CalculatorController) Bind(router *mux.Router) {
 func (b CalculatorController) Calc(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type", "application/json")
 
-	var expression models.ExpressionModel
-	_ = json.NewDecoder(request.Body).Decode(&expression)
+	var expressionRequest models.ExpressionRequest
+	_ = json.NewDecoder(request.Body).Decode(&expressionRequest)
 
 	calculator := Calculator{}
 
-	result := calculator.Calculate(expression.Content)
+	expressionResult := calculator.Calculate(expressionRequest.Expression)
 
-	json.NewEncoder(writer).Encode(result)
+	var expressionResponse models.ExpressionResponse
+	expressionResponse.Resolution = expressionResult.Resolution
+
+	json.NewEncoder(writer).Encode(expressionResponse)
 }

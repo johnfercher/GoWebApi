@@ -1,4 +1,4 @@
-package services
+package operations
 
 import "regexp"
 
