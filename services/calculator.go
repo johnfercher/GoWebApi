@@ -2,137 +2,54 @@ package services
 
 import (
 	"fmt"
-	"math"
 	"regexp"
 	"strconv"
 )
 
 type Calculator struct {
-	multiplyRegex    *regexp.Regexp
-	divideRegex      *regexp.Regexp
-	sumRegex         *regexp.Regexp
-	minusRegex       *regexp.Regexp
-	powRegex         *regexp.Regexp
+	MathOperations   []MathOperation
 	singleExpression *regexp.Regexp
 }
 
 func (c Calculator) Calculate(expression string) string {
-	c.multiplyRegex = regexp.MustCompile(`\d+(\.\d+)?\*\d+(\.\d+)?`)
-	c.divideRegex = regexp.MustCompile(`\d+(\.\d+)?\/\d+(\.\d+)?`)
-	c.sumRegex = regexp.MustCompile(`\d+(\.\d+)?\+\d+(\.\d+)?`)
-	c.minusRegex = regexp.MustCompile(`\d+(\.\d+)?\-\d+(\.\d+)?`)
-	c.powRegex = regexp.MustCompile(`\d+(\.\d+)?\^\d+(\.\d+)?`)
 	c.singleExpression = regexp.MustCompile(`[+|\-|*|^|/]`)
+
+	c.MathOperations = append(c.MathOperations, PowerOperation{})
+	c.MathOperations = append(c.MathOperations, MultiplicationOperation{})
+	c.MathOperations = append(c.MathOperations, DivisionOperation{})
+	c.MathOperations = append(c.MathOperations, AdditionOperation{})
+	c.MathOperations = append(c.MathOperations, SubtractionOperation{})
 
 	fmt.Println(expression)
 
-	expressionWithoutPow := c.ResolvePows(expression)
-	expressionWithoutMultiplication := c.ResolveMultiplications(expressionWithoutPow)
-	expressionWithoutDivision := c.ResolveDivisions(expressionWithoutMultiplication)
-	expressionWithoutSum := c.ResolveSums(expressionWithoutDivision)
-	expressionWithoutMinus := c.ResolveMinus(expressionWithoutSum)
+	for _, item := range c.MathOperations {
+		expression = c.ResolveAll(expression, item)
+	}
 
-	return expressionWithoutMinus
+	return expression
 }
 
-func (c Calculator) ResolvePows(expression string) string {
-	match := c.powRegex.MatchString(expression)
+func (c Calculator) ResolveAll(expression string, mathOperation MathOperation) string {
+	regex := mathOperation.GetRegex()
+	operation := mathOperation.GetOperation()
+
+	match := regex.MatchString(expression)
 
 	if !match {
 		return expression
 	}
 
-	toCalc := c.powRegex.FindAllString(expression, 1)
-	leftParts := c.powRegex.Split(expression, 2)
+	toCalc := regex.FindAllString(expression, 1)
+	leftParts := regex.Split(expression, 2)
 
 	numbers := c.GetNumbers(toCalc[0])
 
-	result := math.Pow(numbers[0], numbers[1])
+	result := operation(numbers[0], numbers[1])
 
 	newExpression := leftParts[0] + fmt.Sprintf("%f", result) + leftParts[1]
 	fmt.Println(newExpression)
 
-	return c.ResolvePows(newExpression)
-}
-
-func (c Calculator) ResolveMultiplications(expression string) string {
-	match := c.multiplyRegex.MatchString(expression)
-
-	if !match {
-		return expression
-	}
-
-	toCalc := c.multiplyRegex.FindAllString(expression, 1)
-	leftParts := c.multiplyRegex.Split(expression, 2)
-
-	numbers := c.GetNumbers(toCalc[0])
-
-	result := numbers[0] * numbers[1]
-
-	newExpression := leftParts[0] + fmt.Sprintf("%f", result) + leftParts[1]
-	fmt.Println(newExpression)
-
-	return c.ResolveMultiplications(newExpression)
-}
-
-func (c Calculator) ResolveDivisions(expression string) string {
-	match := c.divideRegex.MatchString(expression)
-
-	if !match {
-		return expression
-	}
-
-	toCalc := c.divideRegex.FindAllString(expression, 1)
-	leftParts := c.divideRegex.Split(expression, 2)
-
-	numbers := c.GetNumbers(toCalc[0])
-
-	result := numbers[0] / numbers[1]
-
-	newExpression := leftParts[0] + fmt.Sprintf("%f", result) + leftParts[1]
-	fmt.Println(newExpression)
-
-	return c.ResolveDivisions(newExpression)
-}
-
-func (c Calculator) ResolveSums(expression string) string {
-	match := c.sumRegex.MatchString(expression)
-
-	if !match {
-		return expression
-	}
-
-	toCalc := c.sumRegex.FindAllString(expression, 1)
-	leftParts := c.sumRegex.Split(expression, 2)
-
-	numbers := c.GetNumbers(toCalc[0])
-
-	result := numbers[0] + numbers[1]
-
-	newExpression := leftParts[0] + fmt.Sprintf("%f", result) + leftParts[1]
-	fmt.Println(newExpression)
-
-	return c.ResolveSums(newExpression)
-}
-
-func (c Calculator) ResolveMinus(expression string) string {
-	match := c.minusRegex.MatchString(expression)
-
-	if !match {
-		return expression
-	}
-
-	toCalc := c.minusRegex.FindAllString(expression, 1)
-	leftParts := c.minusRegex.Split(expression, 2)
-
-	numbers := c.GetNumbers(toCalc[0])
-
-	result := numbers[0] - numbers[1]
-
-	newExpression := leftParts[0] + fmt.Sprintf("%f", result) + leftParts[1]
-	fmt.Println(newExpression)
-
-	return c.ResolveMinus(newExpression)
+	return c.ResolveAll(newExpression, mathOperation)
 }
 
 func (c Calculator) GetNumbers(singleExpression string) []float64 {
